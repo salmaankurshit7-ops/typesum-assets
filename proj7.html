@@ -1,0 +1,720 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>TypeSum — Retro Gold Arcade</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&family=Press+Start+2P&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg-dark: #0e1112;
+      --checker-dark: #0b0d0e;
+      --checker-light: #111315;
+      --gold-1: #f6d365;
+      --gold-2: #c79a2b;
+      --accent-gold: linear-gradient(135deg, #f8e6a8, #c79a2b);
+      --muted: rgba(255,255,255,0.65);
+      --card-gloss: rgba(255,255,255,0.03);
+      --panel-bg: rgba(8,9,10,0.6);
+      --glass: rgba(255,255,255,0.02);
+      --shadow: 0 12px 40px rgba(0,0,0,0.75);
+      --radius: 12px;
+      --logo-path: "typesum.jpg";
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:Poppins,system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial;background:#000}
+    body{
+      display:flex;align-items:center;justify-content:center;padding:28px;
+      background-color:var(--bg-dark);
+      color:var(--muted);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      background: 
+    linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), /* optional dark overlay */
+    url("your-background.jpg") center/cover no-repeat fixed;
+  color: var(--muted);
+  font-family: 'Poppins', sans-serif;
+  min-height: 100vh;
+  margin: 0;
+      
+    }
+
+    /* checkerboard background similar to your image */
+    body::before{
+      content:'';
+      position:fixed;inset:0;z-index:-3;
+      background:
+        linear-gradient(90deg, rgba(0,0,0,0.35) 50%, rgba(255,255,255,0.02) 50%) repeat,
+        linear-gradient(0deg, rgba(0,0,0,0.35) 50%, rgba(255,255,255,0.02) 50%) repeat;
+      background-size: 48px 48px, 48px 48px;
+      opacity:0.9;
+      filter:contrast(0.8) saturate(0.9);
+    }
+
+    /* central glow */
+    body::after{
+      content:'';
+      position:fixed;left:50%;top:40%;width:900px;height:900px;transform:translate(-50%,-50%);z-index:-2;
+      background: radial-gradient(closest-side, rgba(200,150,40,0.18), rgba(0,0,0,0) 45%);
+      pointer-events:none;
+    }
+
+    .app {
+      width: 100%;
+  max-width: 1100px;
+  border-radius: 16px;
+  padding: 18px;
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 18px;
+
+  /* Opaque dark-gold theme */
+  background: rgba(10, 10, 10, 0.88); /* solid, 88% opaque */
+  backdrop-filter: blur(4px);
+  box-shadow: 0 0 25px rgba(255, 215, 0, 0.15);
+
+  align-items: start;
+  border: 1px solid rgba(255, 215, 120, 0.25);
+  position: relative;
+  overflow: hidden;
+    }
+
+    /* LEFT PANEL */
+    .sidebar{padding:18px;border-radius:12px;background:linear-gradient(180deg, rgba(0,0,0,0.45), rgba(255,255,255,0.02));border:1px solid rgba(255,215,120,0.03)}
+    .brand{display:flex;gap:12px;align-items:center;margin-bottom:12px}
+    .logo-wrap{width:56px;height:56px;border-radius:10px;overflow:hidden;box-shadow:0 6px 22px rgba(0,0,0,0.7);background:linear-gradient(135deg,#111,#000);display:flex;align-items:center;justify-content:center}
+    .logo-wrap img{width:100%;height:100%;object-fit:cover;display:block}
+    .brand h1{font-size:20px;margin:0;color:var(--gold-1);font-weight:800;letter-spacing:0.6px}
+    .brand p{margin:0;color:var(--muted);font-size:12px}
+
+    .nav{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+    .tab{
+      display:flex;align-items:center;gap:10px;padding:10px;border-radius:8px;cursor:pointer;border:1px solid transparent;
+      background:transparent;color:var(--muted);font-weight:700;text-transform:uppercase;font-size:13px;
+      letter-spacing:0.8px;
+    }
+    .tab:hover{background:rgba(255,255,255,0.02)}
+    .tab.active{background:linear-gradient(90deg, rgba(246,211,101,0.06), rgba(199,154,43,0.04));box-shadow:0 8px 20px rgba(199,154,43,0.03);color:var(--gold-1)}
+
+    .controls{margin-top:14px;padding:12px;border-radius:10px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));border:1px solid rgba(255,215,120,0.02)}
+    label{font-size:13px;color:var(--muted)}
+    select,input[type=range]{width:100%;margin-top:8px;background:transparent;color:var(--muted);border:1px solid rgba(255,255,255,0.03);padding:8px;border-radius:6px}
+    .muted{color:var(--muted);font-size:13px}
+
+    .control-row{display:flex;gap:8px;margin-top:12px}
+    .control-row button{flex:1}
+
+    /* START BUTTON */
+    .start-btn{
+      display:inline-flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;
+      background:var(--accent-gold);border:1px solid #a67515;color:#081018;font-weight:800;cursor:pointer;
+      box-shadow: 0 10px 30px rgba(199,154,43,0.06), inset 0 -2px 0 rgba(0,0,0,0.12);
+    }
+    .ghost{
+      background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted);padding:9px;border-radius:8px;cursor:pointer
+    }
+
+    /* RIGHT PANEL (main) */
+    .main{padding:20px;border-radius:12px;background:linear-gradient(180deg, rgba(0,0,0,0.45), rgba(255,255,255,0.01));min-height:560px;border:1px solid rgba(255,215,120,0.02)}
+    .game-header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .pill{background:rgba(255,255,255,0.02);padding:6px 10px;border-radius:999px;font-weight:800;color:var(--gold-1);text-transform:uppercase;letter-spacing:0.6px}
+
+    .game-area{margin-top:18px}
+    .card{background: linear-gradient(180deg, rgba(0,0,0,0.6), rgba(255,255,255,0.01));padding:18px;border-radius:10px;border:1px solid rgba(255,215,120,0.02);box-shadow:0 6px 18px rgba(0,0,0,0.6)}
+
+    /* Math */
+    #math-question{font-size:36px;font-weight:900;margin:10px 0;color:var(--gold-1);text-shadow:0 2px 16px rgba(199,154,43,0.25)}
+    .row{display:flex;gap:8px;align-items:center}
+    input[type=number],input[type=text]{
+      padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:rgba(255,255,255,0.02);color:var(--muted);
+      width:100%;
+      font-weight:700;
+    }
+    button.btn{
+      padding:10px 14px;border-radius:8px;background:var(--gold-1);border:none;color:#071422;font-weight:900;cursor:pointer;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.5);
+    }
+    .status{margin-top:10px;font-weight:800;color:var(--gold-2)}
+
+    /* Typer */
+    #typer-word{font-size:44px;font-weight:900;letter-spacing:1px;color:var(--gold-2);text-shadow:0 2px 16px rgba(246,211,101,0.14)}
+    #typer-input{font-size:18px;padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);width:100%;background:rgba(255,255,255,0.02);color:var(--muted);font-weight:700}
+    .stats{display:flex;gap:12px;align-items:center;margin-top:12px;color:var(--muted)}
+
+    /* word count badge */
+    .badge{background:rgba(255,255,255,0.03);padding:6px 10px;border-radius:999px;color:var(--muted);font-weight:700}
+
+    /* modal result */
+    .result-modal {
+      position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:9999;
+      width:360px;background:linear-gradient(180deg,#0b0c0d, #121212);border-radius:12px;padding:18px;border:1px solid rgba(199,154,43,0.12);
+      box-shadow:0 20px 60px rgba(0,0,0,0.7);
+      color:var(--muted);display:none;
+    }
+    .result-modal h3{margin:0 0 8px;color:var(--gold-1);font-size:18px}
+    .result-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px dashed rgba(255,255,255,0.03)}
+    .result-row:last-child{border-bottom:none}
+    .save-btn{margin-top:12px;display:inline-block;padding:10px 12px;background:var(--gold-1);color:#071422;border-radius:8px;font-weight:800;cursor:pointer;text-align:center;border:none}
+
+    .leaderboard{
+      margin-top:12px;color:var(--muted);font-size:13px;background:rgba(255,255,255,0.02);padding:8px;border-radius:8px;
+      max-height:180px;overflow:auto;border:1px solid rgba(255,255,255,0.02)
+    }
+    .leaderboard .row{display:flex;justify-content:space-between;padding:6px 2px;border-bottom:1px solid rgba(255,255,255,0.01)}
+    .leaderboard .row:last-child{border-bottom:none}
+
+    /* responsive */
+    @media (max-width:900px){.app{grid-template-columns:1fr;}.sidebar{order:2}.main{order:1}}
+
+    /* decorative footer glow */
+    .bottom-glow{
+      position:absolute;left:50%;bottom:-120px;transform:translateX(-50%);width:1200px;height:300px;border-radius:50%;
+      pointer-events:none;background: radial-gradient(closest-side, rgba(199,154,43,0.06), rgba(0,0,0,0));filter:blur(24px);z-index:0;
+    }
+
+    .logo-caption{font-family:'Press Start 2P', monospace;color:var(--gold-1);font-size:12px;letter-spacing:1px;margin-top:8px}
+  </style>
+</head>
+<body>
+  <div class="app" id="appRoot">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo-wrap">
+          <img src="typesum.png" alt="TypeSum logo">
+        </div>
+        <div>
+          <h1>TypeSum</h1>
+          <p class="small">Retro Gold Arcade — Typing + Math</p>
+          <div class="logo-caption">V1 · Retro Arcade</div>
+        </div>
+      </div>
+
+      <div class="nav">
+        <div class="tab active" data-tab="math">🧮 Math Challenge</div>
+        <div class="tab" data-tab="typer">⌨️ Speed Typer</div>
+      </div>
+
+      <div class="controls">
+        <div>
+          <label for="globalDifficulty">Difficulty</label>
+          <select id="globalDifficulty">
+            <option value="easy">Easy</option>
+            <option value="medium" selected>Medium</option>
+            <option value="hard">Hard</option>
+          </select>
+        </div>
+
+        <div style="margin-top:12px">
+          <label class="muted">Math Time (seconds)</label>
+          <input id="mathTime" type="range" min="10" max="120" value="30">
+          <div class="muted" id="mathTimeVal">30s</div>
+        </div>
+
+        <div style="margin-top:12px">
+          <label class="muted">Typer Time (seconds)</label>
+          <input id="typerTime" type="range" min="10" max="180" value="60">
+          <div class="muted" id="typerTimeVal">60s</div>
+        </div>
+
+        <div class="control-row">
+          <button id="startBtn" class="start-btn">▶ Start</button>
+          <button id="resetAll" class="ghost">Reset Scores</button>
+        </div>
+
+        <div style="margin-top:12px;display:flex;gap:8px">
+          <button id="shuffleWords" class="ghost">Shuffle Wordbank</button>
+          <div class="badge" style="margin-left:auto" id="wordCountBadge">Words</div>
+        </div>
+
+        <p class="muted" style="margin-top:12px">Tip: choose a tab then press <strong>Start</strong>. Retro gold theme applied.</p>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="game-header">
+        <div class="game-title">
+          <div class="pill" id="activeLabel">Math</div>
+          <h2 style="margin:0;color:var(--muted)">TypeSum — Retro Arcade</h2>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center">
+          <div class="muted">Score: <strong id="globalScore" style="color:var(--gold-1)">0</strong></div>
+          <div class="muted">Best: <strong id="bestScore" style="color:var(--gold-2)">0</strong></div>
+        </div>
+      </div>
+
+      <div class="game-area">
+        <!-- Math Card -->
+        <section id="mathCard" class="card" style="margin-bottom:14px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div class="muted">Math Challenge — solve as many as you can</div>
+              <div id="math-question">Press Start to begin</div>
+            </div>
+            <div style="text-align:right">
+              <div class="muted">⏳ Time</div>
+              <div id="math-timer" style="font-size:20px;font-weight:900;color:var(--gold-2)">30s</div>
+            </div>
+          </div>
+
+          <div style="margin-top:14px" class="row">
+            <input id="math-answer" type="number" placeholder="Your answer" disabled />
+            <button id="math-submit" class="btn" disabled>Submit</button>
+            <button id="math-skip" class="ghost" disabled>Skip</button>
+          </div>
+          <div class="status" id="math-status">Score: <strong id="math-score">0</strong></div>
+        </section>
+
+        <!-- Typer Card -->
+        <section id="typerCard" class="card" style="display:none">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div class="muted">Type the word shown — speed and accuracy</div>
+              <div id="typer-word">Press Start to begin</div>
+            </div>
+            <div style="text-align:right">
+              <div class="muted">⏳ Time</div>
+              <div id="typer-timer" style="font-size:20px;font-weight:900;color:var(--gold-2)">60s</div>
+            </div>
+          </div>
+
+          <input id="typer-input" type="text" placeholder="Type here..." autocomplete="off" disabled />
+
+          <div class="stats">
+            <div class="muted">Score: <strong id="typer-score">0</strong></div>
+            <div class="muted">WPM est: <strong id="typer-wpm">0</strong></div>
+            <div class="muted">Correct: <strong id="typer-correct">0</strong></div>
+            <div class="muted">Wrong: <strong id="typer-wrong">0</strong></div>
+          </div>
+
+          <div style="margin-top:12px" class="muted">Words in bank: <span id="wordCount">0</span></div>
+        </section>
+      </div>
+    </main>
+
+    <div class="bottom-glow" aria-hidden="true"></div>
+  </div>
+
+  <!-- Result modal / leaderboard -->
+  <div id="resultModal" class="result-modal" role="dialog" aria-hidden="true">
+    <h3 id="resultTitle">Result</h3>
+    <div class="result-row">
+      <div>WPM</div><div id="modalWpm" style="font-weight:900;color:var(--gold-1)">0</div>
+    </div>
+    <div class="result-row">
+      <div>Percentile</div><div id="modalPct" style="font-weight:900;color:var(--gold-2)">0%</div>
+    </div>
+    <div class="result-row">
+      <div>Tier</div><div id="modalTier" style="font-weight:900;color:var(--gold-1)">Bronze</div>
+    </div>
+
+    <button id="saveScoreBtn" class="save-btn">Save to leaderboard</button>
+
+    <div class="leaderboard" id="leaderboard">
+      <div style="font-weight:800;margin-bottom:6px;color:var(--gold-1)">Leaderboard (Top 10)</div>
+      <div id="leaderRows"></div>
+    </div>
+  </div>
+
+  <script>
+    // ---------- Elements ----------
+    const tabs = document.querySelectorAll('.tab');
+    const mathCard = document.getElementById('mathCard');
+    const typerCard = document.getElementById('typerCard');
+    const activeLabel = document.getElementById('activeLabel');
+    const globalScoreEl = document.getElementById('globalScore');
+    const bestScoreEl = document.getElementById('bestScore');
+    const wordCountBadge = document.getElementById('wordCountBadge');
+
+    const globalDifficulty = document.getElementById('globalDifficulty');
+    const mathTimeRange = document.getElementById('mathTime');
+    const typerTimeRange = document.getElementById('typerTime');
+    const mathTimeVal = document.getElementById('mathTimeVal');
+    const typerTimeVal = document.getElementById('typerTimeVal');
+    const resetAll = document.getElementById('resetAll');
+    const shuffleWordsBtn = document.getElementById('shuffleWords');
+    const startBtn = document.getElementById('startBtn');
+
+    // Math elements
+    const mathQuestionEl = document.getElementById('math-question');
+    const mathAnswerEl = document.getElementById('math-answer');
+    const mathSubmitBtn = document.getElementById('math-submit');
+    const mathSkipBtn = document.getElementById('math-skip');
+    const mathTimerEl = document.getElementById('math-timer');
+    const mathScoreEl = document.getElementById('math-score');
+
+    // Typer elements
+    const typerWordEl = document.getElementById('typer-word');
+    const typerInput = document.getElementById('typer-input');
+    const typerTimerEl = document.getElementById('typer-timer');
+    const typerScoreEl = document.getElementById('typer-score');
+    const typerWpmEl = document.getElementById('typer-wpm');
+    const typerCorrectEl = document.getElementById('typer-correct');
+    const typerWrongEl = document.getElementById('typer-wrong');
+    const wordCountEl = document.getElementById('wordCount');
+
+    // Result modal elements
+    const resultModal = document.getElementById('resultModal');
+    const modalWpm = document.getElementById('modalWpm');
+    const modalPct = document.getElementById('modalPct');
+    const modalTier = document.getElementById('modalTier');
+    const saveScoreBtn = document.getElementById('saveScoreBtn');
+    const leaderRows = document.getElementById('leaderRows');
+
+    // timers state
+    let mathTime = Number(mathTimeRange.value);
+    let typerTime = Number(typerTimeRange.value);
+    mathTimeVal.textContent = mathTime + 's';
+    typerTimeVal.textContent = typerTime + 's';
+
+    mathTimeRange.addEventListener('input', (e)=>{ mathTime = Number(e.target.value); mathTimeVal.textContent = mathTime + 's'; });
+    typerTimeRange.addEventListener('input', (e)=>{ typerTime = Number(e.target.value); typerTimeVal.textContent = typerTime + 's'; });
+
+    // tab switching (updates UI, but DOES NOT start timers)
+    tabs.forEach(t => t.addEventListener('click', ()=>{
+      tabs.forEach(x=>x.classList.remove('active'));
+      t.classList.add('active');
+      const tab = t.dataset.tab;
+      if(tab==='math'){
+        mathCard.style.display='block';
+        typerCard.style.display='none';
+        activeLabel.textContent='Math';
+      } else {
+        mathCard.style.display='none';
+        typerCard.style.display='block';
+        activeLabel.textContent='Typer';
+      }
+    }));
+
+    // ---------- Math logic (no auto-start) ----------
+    let mathTimerId=null, mathLeft=0, mathScore=0, currentAnswer=null, mathRunning=false;
+
+    function rand(min,max){return Math.floor(Math.random()*(max-min+1))+min}
+
+    function generateMath(){
+      const diff = globalDifficulty.value;
+      let n1,n2,ops;
+      if(diff==='easy'){ n1=rand(1,10); n2=rand(1,10); ops=['+','-']; }
+      else if(diff==='medium'){ n1=rand(1,30); n2=rand(1,15); ops=['+','-','*']; }
+      else{ n1=rand(10,150); n2=rand(1,50); ops=['+','-','*','/']; }
+      const op = ops[Math.floor(Math.random()*ops.length)];
+      let raw;
+      if(op==='/'){ raw = +( (Math.round((n1 / n2)*100))/100 ); }
+      else raw = eval(`${n1}${op}${n2}`);
+      currentAnswer = raw;
+      mathQuestionEl.textContent = `${n1} ${op} ${n2} = ?`;
+    }
+
+    function startMathTimer(){
+      if(mathRunning) return;
+      mathRunning = true;
+      mathLeft = mathTime;
+      mathTimerEl.textContent = mathLeft + 's';
+      mathSubmitBtn.disabled = false;
+      mathAnswerEl.disabled = false;
+      mathSkipBtn.disabled = false;
+      generateMath();
+      mathTimerId = setInterval(()=>{
+        mathLeft--;
+        mathTimerEl.textContent = mathLeft + 's';
+        if(mathLeft<=0){ stopMathTimer(); mathEnd(); }
+      },1000);
+    }
+
+    function stopMathTimer(){
+      mathRunning = false;
+      clearInterval(mathTimerId);
+      mathTimerId = null;
+    }
+
+    function mathEnd(){
+      mathSubmitBtn.disabled=true;
+      mathAnswerEl.disabled=true;
+      mathSkipBtn.disabled = true;
+      mathQuestionEl.textContent='⏰ Time up! Take a break.';
+      updateGlobalScore();
+    }
+
+    function resetMathState(){
+      stopMathTimer();
+      mathScore = 0;
+      mathScoreEl.textContent = mathScore;
+      mathSubmitBtn.disabled = true;
+      mathAnswerEl.disabled = true;
+      mathSkipBtn.disabled = true;
+      mathQuestionEl.textContent = 'Press Start to begin';
+      mathTimerEl.textContent = mathTime + 's';
+    }
+
+    mathSubmitBtn.addEventListener('click', ()=>{
+      if(!mathRunning) return;
+      const val = mathAnswerEl.value.trim();
+      if(val==='') return;
+      let user = Number(val);
+      const ok = Math.abs(user - currentAnswer) < 0.01;
+      if(ok){
+        mathScore++;
+        mathScoreEl.textContent=mathScore;
+        document.getElementById('math-status').textContent='✅ Correct';
+      } else {
+        document.getElementById('math-status').textContent=`❌ Wrong — ${currentAnswer}`;
+        mathLeft = Math.max(0, mathLeft - 3);
+      }
+      mathAnswerEl.value='';
+      generateMath();
+    });
+
+    mathSkipBtn.addEventListener('click', ()=>{
+      if(!mathRunning) return;
+      mathLeft = Math.max(0, mathLeft - 2);
+      generateMath();
+    });
+
+    // ---------- Typer logic (no auto-start) ----------
+    const words = [
+      'resink','transversomedial','pharyngopathy','postmineral','myelosyphilis','silverer','evincement','phrygium','punnigram','imminution','environmental','sleepify','nope','wauken','indignance','knotwort','apocodeine','escortee','dogwatch','eaglewood','unbrotherliness','mulse','dermobranchiata','typhic','poststertorous','indevout','anatomicopathologic','unimpenetrable','hoggy','urrhodin','Dioecia','unchapter','nonumbilicate','zwitterionic','apportionable','ferulic','statefulness','pharyngotonsillitis','Mimulus','recce','mutinously','reboant','marshwort','lupoid','chromatophilic','lauder','nirles','esthesiometer','semisocial','unbeing','kangaroo','takosis','inconvertibility','anesthetist','rumorproof','thoracoscopy','euphorbium','bizet','song','dolichocephali','platemaker','vesicupapular','electroforming','dilatingly','meethelp','loincloth','avowably','counterindicate','treacliness','Epigonus','airmark','polarography','precomposition','lemography','Apinage','Taal','logology','probeer','randomization','poditic','individualize','castigate','Biloculina','overscrub','koolah','weetless','erased','layery','discontinuee','anaphylatoxin','unwounded','personalism','howitzer','hexahydroxy','koku','reamer','tonguiness','microgametocyte','baba','ludefisk','novelwright','swinehull','Odonata','indefinable','faineance','nidologist','supracargo','beriberic','betso','archheart','snary','Viminal','Pygopodidae','acetylenediurein','asphalt','preimpress','fountainlet','bejel','unpictorially','heliophyte','chimopeelagic','warison','antivaccinist','overtwine','preremove','nerval','bufonite','eradicator','turtling','winrace','psychographic','impalpably','amygdalase','Octogynia','brimming','grist','casave','brazilein','afluking','meliceris','portative','unsteck','Madelon','barramunda','optotechnics','metapterygium','unromanticalness','Jacobinism','pricklingly','blameless','elderhood','committeewoman','comicocynical','aggrate','stentoronic','flatwise','bipyridyl','untastable','aegerian','unmistrusted','quadrigamist','Meleagrinae','helvite','neuralist','Swietenia','unpleadable','colorably','mogilalism','consequently','atamasco','inhospitality','noncarnivorous','counterruin','gryposis','ringe','displeasedly','incenter','gallycrow','whincow','repudiationist','unagile','chaplain','bekerchief','subproduct','pointingly','Physonectae','bumpingly','hateful','endogenous','facticide','velours','carmoisin','reaccomplish','protistic','recuperance','tech','withywind','Galen','Slavistic','escropulo'
+    ];
+    wordCountEl.textContent = words.length;
+    wordCountBadge.textContent = words.length + ' words';
+
+    let typerLeft = 0, typerTimerId = null, typerScore = 0, typerCorrect = 0, typerWrong = 0, currentTyperWord = '', typerRunning = false;
+    let typerStartTimestamp = null;
+
+    function pickTyperWord(){ return words[Math.floor(Math.random()*words.length)]; }
+    function updateTyperWord(){ currentTyperWord = pickTyperWord(); typerWordEl.textContent = currentTyperWord; }
+
+    function startTyperTimer(){
+      if(typerRunning) return;
+      typerRunning = true;
+      typerLeft = typerTime;
+      typerTimerEl.textContent = typerLeft + 's';
+      typerInput.disabled = false;
+      updateTyperWord();
+      typerStartTimestamp = Date.now();
+      typerTimerId = setInterval(()=>{
+        typerLeft--;
+        typerTimerEl.textContent = typerLeft + 's';
+        if(typerLeft<=0){ stopTyperTimer(); endTyper(); }
+      },1000);
+    }
+
+    function stopTyperTimer(){
+      typerRunning = false;
+      clearInterval(typerTimerId);
+      typerTimerId = null;
+    }
+
+    function endTyper(){
+      typerInput.disabled = true;
+      updateGlobalScore();
+
+      // compute elapsed in seconds more accurately
+      const endTs = Date.now();
+      const elapsedSeconds = Math.max(1, Math.round((endTs - (typerStartTimestamp || endTs)) / 1000));
+      // words typed = typerScore
+      const wordsTyped = typerScore;
+      const wpm = computeWpm(wordsTyped, elapsedSeconds);
+
+      // compute percentile/tier & show modal
+      const res = getPercentileAndTier(wpm);
+      showResultModal(res.wpm, res.percentile, res.tier);
+    }
+
+    function resetTyperState(){
+      stopTyperTimer();
+      typerScore = 0; typerCorrect = 0; typerWrong = 0;
+      typerScoreEl.textContent = '0'; typerCorrectEl.textContent = '0'; typerWrongEl.textContent = '0'; typerWpmEl.textContent = '0';
+      typerInput.disabled = true;
+      typerWordEl.textContent = 'Press Start to begin';
+      typerTimerEl.textContent = typerTime + 's';
+      typerStartTimestamp = null;
+    }
+
+    typerInput.addEventListener('input',(e)=>{
+      if(!typerRunning) return;
+      const val = e.target.value.trim();
+      if(val===currentTyperWord){
+        typerCorrect++; typerScore++; typerScoreEl.textContent = typerScore; typerCorrectEl.textContent = typerCorrect;
+        const diff = globalDifficulty.value;
+        if(diff==='hard') typerLeft += 2; else if(diff==='medium') typerLeft += 3; else typerLeft +=5;
+        updateTyperWord(); e.target.value='';
+        const elapsed = ( (Date.now() - typerStartTimestamp) / 1000 ) || 1;
+        const wpm = Math.round((typerScore / Math.max(1, elapsed)) * 60);
+        typerWpmEl.textContent = wpm;
+      } else if(currentTyperWord.startsWith(val) || val===''){
+        // in progress
+      } else {
+        if(val.endsWith(' ')){
+          typerWrong++; typerWrongEl.textContent = typerWrong; e.target.value='';
+          typerLeft = Math.max(0, typerLeft - 2);
+        }
+      }
+      typerTimerEl.textContent = typerLeft + 's';
+    });
+
+    // ---------- Controls ----------
+    function shuffle(array){ for(let i=array.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [array[i],array[j]]=[array[j],array[i]];} }
+    shuffleWordsBtn.addEventListener('click', ()=>{ shuffle(words); updateTyperWord(); alert('Wordbank shuffled'); });
+
+    resetAll.addEventListener('click', ()=>{ localStorage.removeItem('bestScore'); localStorage.removeItem('ts-leaderboard'); globalScoreEl.textContent='0'; bestScoreEl.textContent='0'; alert('Scores reset'); renderLeaderboard(); });
+
+    function updateGlobalScore(){
+      const total = Number(mathScoreEl.textContent || 0) + Number(typerScoreEl.textContent || 0);
+      globalScoreEl.textContent = total;
+      const best = Number(localStorage.getItem('bestScore')||0);
+      if(total>best){ localStorage.setItem('bestScore', total); bestScoreEl.textContent = total; } else bestScoreEl.textContent = best;
+    }
+
+    globalDifficulty.addEventListener('change', ()=>{
+      resetAllStates();
+    });
+
+    function resetAllStates(){
+      resetMathState();
+      resetTyperState();
+      globalScoreEl.textContent = '0';
+    }
+
+    // ---------- Start / Restart logic ----------
+    startBtn.addEventListener('click', ()=>{
+      const activeTab = document.querySelector('.tab.active').dataset.tab;
+      if(activeTab === 'math'){
+        if(mathRunning){
+          stopMathTimer();
+          mathScore = 0; mathScoreEl.textContent = '0';
+          generateMath();
+          startMathTimer();
+        } else {
+          mathTime = Number(mathTimeRange.value);
+          mathTimeVal.textContent = mathTime + 's';
+          generateMath();
+          startMathTimer();
+        }
+      } else {
+        if(typerRunning){
+          stopTyperTimer();
+          typerScore = 0; typerCorrect = 0; typerWrong = 0;
+          typerScoreEl.textContent = '0'; typerCorrectEl.textContent = '0'; typerWrongEl.textContent = '0';
+          updateTyperWord();
+          startTyperTimer();
+        } else {
+          typerTime = Number(typerTimeRange.value);
+          typerTimeVal.textContent = typerTime + 's';
+          updateTyperWord();
+          startTyperTimer();
+          setTimeout(()=>typerInput.focus(),120);
+        }
+      }
+      startBtn.textContent = '↻ Restart';
+      // hide modal if visible
+      hideResultModal();
+    });
+
+    mathAnswerEl.addEventListener('keydown', (e)=>{ if(e.key==='Enter') mathSubmitBtn.click(); });
+
+    // initialize non-running UI
+    resetAllStates();
+
+    // ---------------- Percentile & Tier logic (normal approx) ----------------
+    // mean and sd based on your provided average 45-50 -> use mean=47.5, sd=12
+    const P_MEAN = 47.5;
+    const P_SD = 12;
+
+    function erf(x) {
+      const sign = (x >= 0) ? 1 : -1;
+      x = Math.abs(x);
+      const a1 =  0.254829592;
+      const a2 = -0.284496736;
+      const a3 =  1.421413741;
+      const a4 = -1.453152027;
+      const a5 =  1.061405429;
+      const p  =  0.3275911;
+      const t = 1.0/(1.0 + p*x);
+      const y = 1.0 - (((((a5*t + a4)*t) + a3)*t + a2)*t + a1) * t * Math.exp(-x*x);
+      return sign * y;
+    }
+
+    function normalCdf(x, mean=P_MEAN, sd=P_SD) {
+      return 0.5 * (1 + erf((x - mean) / (sd * Math.SQRT2)));
+    }
+
+    function computeWpm(wordsTyped, elapsedSeconds){
+      if (elapsedSeconds <= 0) return 0;
+      return (wordsTyped / elapsedSeconds) * 60;
+    }
+
+    function getPercentileAndTier(wpm){
+      const p = normalCdf(wpm);
+      const pct = Math.round(p * 10000) / 100;
+      let tier = 'Bronze';
+      if (pct >= 90) tier = 'Diamond';
+      else if (pct >= 75) tier = 'Platinum';
+      else if (pct >= 50) tier = 'Gold';
+      else if (pct >= 25) tier = 'Silver';
+      return { wpm: Math.round(wpm*10)/10, percentile: pct, tier };
+    }
+
+    // ---------------- Result modal & leaderboard ----------------
+    function showResultModal(wpm, pct, tier){
+      modalWpm.textContent = wpm;
+      modalPct.textContent = pct + '%';
+      modalTier.textContent = tier;
+      resultModal.style.display = 'block';
+      resultModal.setAttribute('aria-hidden','false');
+      // update leaderboard display
+      renderLeaderboard();
+    }
+
+    function hideResultModal(){
+      resultModal.style.display = 'none';
+      resultModal.setAttribute('aria-hidden','true');
+    }
+
+    function loadLeaderboard(){
+      const raw = localStorage.getItem('ts-leaderboard');
+      if(!raw) return [];
+      try { return JSON.parse(raw) } catch(e){ return [] }
+    }
+
+    function saveLeaderboard(list){
+      localStorage.setItem('ts-leaderboard', JSON.stringify(list.slice(0,10)));
+    }
+
+    function renderLeaderboard(){
+      const list = loadLeaderboard();
+      if(list.length===0){
+        leaderRows.innerHTML = `<div style="color:rgba(255,255,255,0.35)">No scores yet. Save your first run!</div>`;
+        return;
+      }
+      leaderRows.innerHTML = '';
+      list.forEach((r, i) => {
+        const el = document.createElement('div');
+        el.className = 'row';
+        el.innerHTML = `<div style="font-weight:700;color:${i===0? 'var(--gold-1)':'var(--muted)'}">${i+1}. ${r.tier}</div><div style="text-align:right">${r.wpm} WPM • ${r.pct}%</div>`;
+        leaderRows.appendChild(el);
+      });
+    }
+
+    // Save current modal result to leaderboard
+    saveScoreBtn.addEventListener('click', ()=>{
+      const wpm = parseFloat(modalWpm.textContent) || 0;
+      const pctStr = modalPct.textContent || '0%';
+      const pct = parseFloat(pctStr.replace('%','')) || 0;
+      const tier = modalTier.textContent || 'Bronze';
+      const list = loadLeaderboard();
+      list.push({ wpm, pct, tier, date: new Date().toISOString() });
+      // sort by wpm desc
+      list.sort((a,b)=> b.wpm - a.wpm);
+      saveLeaderboard(list);
+      renderLeaderboard();
+      alert('Saved to leaderboard!');
+    });
+
+    // render leaderboard on load
+    renderLeaderboard();
+
+    // Expose for debug
+    window._TypeSum = { words, resetAllStates, startMathTimer, stopMathTimer, startTyperTimer, stopTyperTimer, getPercentileAndTier };
+  </script>
+</body>
+</html>
